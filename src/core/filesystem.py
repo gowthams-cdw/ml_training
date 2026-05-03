@@ -1,4 +1,6 @@
 import json
+from collections import OrderedDict, defaultdict
+from datetime import datetime
 
 from core.exceptions import DuplicateFileError, FileSystemError
 from indexing.search_index import SearchIndex
@@ -168,7 +170,7 @@ class FileSystem:
             parts.append(current.name)
             current = current.parent
 
-        return "/" + "/".join(reversed(parts))
+        return "/".join(reversed(parts))
 
     def move(self, src_file_path: str, dest_file_path) -> None:
         src_parts = split_path(src_file_path)
@@ -279,7 +281,7 @@ class FileSystem:
     def _collect_search_results(self, directory, matching_ids, results):
         for file_name, file_id in directory.files.items():
             if file_id in matching_ids:
-                file_path = self._build_directory_path(directory) + file_name
+                file_path = self._build_directory_path(directory) + f"/{file_name}"
                 results.append(file_path)
 
         for child in directory.subdirectories.values():
@@ -288,17 +290,44 @@ class FileSystem:
     def export_state(self, file_path: str):
         metadata_state = {}
 
-        for file_id, metadata in self.metadata_store._store.items():
+        for (
+            file_id,
+            metadata,
+        ) in self.metadata_store._store.items():
+            serialized_versions = []
+
+            for version in metadata.versions:
+                serialized_versions.append(
+                    {
+                        "version_id": version.version_id,
+                        "content_id": version.content_id,
+                        "timestamp": version.timestamp.isoformat(),
+                        "size": version.size,
+                    }
+                )
+
             metadata_state[file_id] = {
                 "file_id": metadata.file_id,
                 "name": metadata.name,
                 "content_id": metadata.content_id,
                 "size": metadata.size,
-                "created_at": metadata.created_at,
-                "modified_at": metadata.modified_at,
-                "permissions": metadata.permissions,
-                "versions": metadata.versions,
+                "created_at": metadata.created_at.isoformat(),
+                "modified_at": metadata.modified_at.isoformat(),
+                "permissions": {
+                    "read": metadata.permissions.read,
+                    "write": metadata.permissions.write,
+                    "delete": metadata.permissions.delete,
+                },
+                "versions": serialized_versions,
             }
+
+        serialized_search_index = {}
+
+        for (
+            word,
+            file_ids,
+        ) in self.search_index._index.items():
+            serialized_search_index[word] = list(file_ids)
 
         directory_data = serialize_directory(self.root)
 
@@ -306,35 +335,74 @@ class FileSystem:
             "directory_tree": directory_data,
             "content_store": self.content_store._store,
             "cache_capacity": self.cache._capacity,
-            "cache": self.cache._cache,
-            "search_index": self.search_index._index,
+            "cache": dict(self.cache._cache),
+            "search_index": serialized_search_index,
             "metadata_store": metadata_state,
         }
 
-        with open(file_path, "w") as file:
-            json.dump(data, file, indent=4)
+        with open(
+            file_path,
+            "w",
+        ) as file:
+            json.dump(
+                data,
+                file,
+                indent=4,
+            )
 
-    def load_state(self, file_path):
-        with open(file_path, "r") as file:
+    def load_state(
+        self,
+        file_path: str,
+    ):
+        with open(
+            file_path,
+            "r",
+        ) as file:
             data = json.load(file)
 
         self.root = deserialize_directory(data["directory_tree"])
+
         self.content_store._store = data["content_store"]
         self.cache._capacity = data["cache_capacity"]
-        self.cache._cache = data["cache"]
-        self.search_index._index = data["search_index"]
+        self.cache._cache = OrderedDict(data["cache"])
+        self.search_index._index = defaultdict(set)
+
+        for (
+            word,
+            file_ids,
+        ) in data["search_index"].items():
+            self.search_index._index[word] = set(file_ids)
+
         self.metadata_store._store = {}
 
-        for file_id, metadata in data["metadata_store"].items():
-            file_meta_data = FileMetadata(
-                file_id=file_id,
+        for metadata in data["metadata_store"].values():
+            versions = []
+
+            for version_data in metadata["versions"]:
+                version = FileVersion(
+                    version_id=version_data["version_id"],
+                    content_id=version_data["content_id"],
+                    timestamp=datetime.fromisoformat(version_data["timestamp"]),
+                    size=version_data["size"],
+                )
+
+                versions.append(version)
+
+            permissions = Permissions(
+                read=metadata["permissions"]["read"],
+                write=metadata["permissions"]["write"],
+                delete=metadata["permissions"]["delete"],
+            )
+
+            file_metadata = FileMetadata(
+                file_id=metadata["file_id"],
                 name=metadata["name"],
                 content_id=metadata["content_id"],
                 size=metadata["size"],
-                created_at=metadata["created_at"],
-                modified_at=metadata["modified_at"],
-                permissions=metadata["permissions"],
-                versions=metadata["versions"],
+                created_at=datetime.fromisoformat(metadata["created_at"]),
+                modified_at=datetime.fromisoformat(metadata["modified_at"]),
+                permissions=permissions,
+                versions=versions,
             )
 
-            self.metadata_store.add_metadata(file_meta_data)
+            self.metadata_store.add_metadata(file_metadata)

@@ -1,18 +1,114 @@
 {
     "directory_tree": {
-        "id": "663e47d6-0e4c-41fd-9048-dd9d332304df",
+        "id": "888f5006-e025-4bcf-b4ed-de9ebfb5f252",
         "name": "/",
         "files": {
-            "hi": "b042a8fe-2598-4e4b-a557-ffe0917996fa",
-            "hello": "591c2752-026b-4f66-8b74-ba34e1bb628b"
+            "neo": "4a1e4316-9401-472e-930a-0b6832568a5c",
+            "test": "5e23269e-a858-4f59-ad23-29f8e78788b2"
         },
-        "subdirectories": {}
+        "subdirectories": {
+            "letsTest": {
+                "id": "2950c7ce-9849-47f9-bbd3-f58b83986968",
+                "name": "letsTest",
+                "files": {
+                    "hello": "9aad1fbd-353f-4b5e-9aba-7ca5194ebf76"
+                },
+                "subdirectories": {}
+            }
+        }
     },
     "content_store": {
-        "ece70883-03ee-4ecf-81ec-898b2bf85536": "hello world",
-        "f3a05613-5030-4fa4-b876-297fd69feaf2": "world"
+        "821adcfb-30e4-48ee-9e6f-50c816cf33ea": "hello world. wake up neo!",
+        "7d11ac96-9d81-4ff1-b67a-e12f094bf777": "hello",
+        "f77973cb-2821-43c8-8a61-af5eee14c0b7": "hello world, hi it's me Gowtham.S aka silentFellow!!!"
     },
     "cache_capacity": 10,
-    "cache": {},
+    "cache": {
+        "821adcfb-30e4-48ee-9e6f-50c816cf33ea": "hello world. wake up neo!",
+        "7d11ac96-9d81-4ff1-b67a-e12f094bf777": "hello"
+    },
     "search_index": {
-        "hello": 
+        "hello": [
+            "5e23269e-a858-4f59-ad23-29f8e78788b2",
+            "4a1e4316-9401-472e-930a-0b6832568a5c",
+            "9aad1fbd-353f-4b5e-9aba-7ca5194ebf76"
+        ],
+        "world.": [
+            "4a1e4316-9401-472e-930a-0b6832568a5c"
+        ],
+        "wake": [
+            "4a1e4316-9401-472e-930a-0b6832568a5c"
+        ],
+        "up": [
+            "4a1e4316-9401-472e-930a-0b6832568a5c"
+        ],
+        "neo!": [
+            "4a1e4316-9401-472e-930a-0b6832568a5c"
+        ],
+        "world,": [
+            "9aad1fbd-353f-4b5e-9aba-7ca5194ebf76"
+        ],
+        "hi": [
+            "9aad1fbd-353f-4b5e-9aba-7ca5194ebf76"
+        ],
+        "it's": [
+            "9aad1fbd-353f-4b5e-9aba-7ca5194ebf76"
+        ],
+        "me": [
+            "9aad1fbd-353f-4b5e-9aba-7ca5194ebf76"
+        ],
+        "gowtham.s": [
+            "9aad1fbd-353f-4b5e-9aba-7ca5194ebf76"
+        ],
+        "aka": [
+            "9aad1fbd-353f-4b5e-9aba-7ca5194ebf76"
+        ],
+        "silentfellow!!!": [
+            "9aad1fbd-353f-4b5e-9aba-7ca5194ebf76"
+        ]
+    },
+    "metadata_store": {
+        "4a1e4316-9401-472e-930a-0b6832568a5c": {
+            "file_id": "4a1e4316-9401-472e-930a-0b6832568a5c",
+            "name": "neo",
+            "content_id": "821adcfb-30e4-48ee-9e6f-50c816cf33ea",
+            "size": 25,
+            "created_at": "2026-05-03T21:38:42.518962",
+            "modified_at": "2026-05-03T21:38:42.518962",
+            "permissions": {
+                "read": true,
+                "write": true,
+                "delete": true
+            },
+            "versions": []
+        },
+        "5e23269e-a858-4f59-ad23-29f8e78788b2": {
+            "file_id": "5e23269e-a858-4f59-ad23-29f8e78788b2",
+            "name": "test",
+            "content_id": "7d11ac96-9d81-4ff1-b67a-e12f094bf777",
+            "size": 5,
+            "created_at": "2026-05-03T21:38:46.933176",
+            "modified_at": "2026-05-03T21:38:46.933176",
+            "permissions": {
+                "read": true,
+                "write": true,
+                "delete": true
+            },
+            "versions": []
+        },
+        "9aad1fbd-353f-4b5e-9aba-7ca5194ebf76": {
+            "file_id": "9aad1fbd-353f-4b5e-9aba-7ca5194ebf76",
+            "name": "hello",
+            "content_id": "f77973cb-2821-43c8-8a61-af5eee14c0b7",
+            "size": 53,
+            "created_at": "2026-05-03T21:41:31.081848",
+            "modified_at": "2026-05-03T21:41:31.081848",
+            "permissions": {
+                "read": true,
+                "write": true,
+                "delete": true
+            },
+            "versions": []
+        }
+    }
+}

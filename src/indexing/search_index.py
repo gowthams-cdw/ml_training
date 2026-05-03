@@ -1,8 +1,5 @@
 from collections import defaultdict
 
-from models import directory
-
-
 class SearchIndex:
     def __init__(self) -> None:
         self._index: defaultdict[str, set[str]] = defaultdict(set)
