@@ -1,0 +1,18 @@
+{
+    "directory_tree": {
+        "id": "663e47d6-0e4c-41fd-9048-dd9d332304df",
+        "name": "/",
+        "files": {
+            "hi": "b042a8fe-2598-4e4b-a557-ffe0917996fa",
+            "hello": "591c2752-026b-4f66-8b74-ba34e1bb628b"
+        },
+        "subdirectories": {}
+    },
+    "content_store": {
+        "ece70883-03ee-4ecf-81ec-898b2bf85536": "hello world",
+        "f3a05613-5030-4fa4-b876-297fd69feaf2": "world"
+    },
+    "cache_capacity": 10,
+    "cache": {},
+    "search_index": {
+        "hello": 
