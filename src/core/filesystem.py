@@ -1,6 +1,7 @@
 import json
 from collections import OrderedDict, defaultdict
 from datetime import datetime
+from typing import List, Set
 
 from core.exceptions import DuplicateFileError, FileSystemError
 from indexing.search_index import SearchIndex
@@ -17,6 +18,11 @@ from utils.paths import resolve_path, split_path
 
 
 class FileSystem:
+    """
+    In-memory file system implementation
+    It supports directories, files, metadata management, content storage, caching, and search indexing.
+    """
+
     def __init__(self) -> None:
         self.root = DirectoryNode(id=generate_id(), name="/", parent=None)
 
@@ -25,7 +31,13 @@ class FileSystem:
         self.cache = LRUCache(capacity=10)
         self.search_index = SearchIndex()
 
-    def create_directory(self, path) -> None:
+    def create_directory(self, path: str) -> None:
+        """
+        creates a directory at the specified path.
+        If any intermediate directories do not exist, they will be created as well.
+        Args:
+            path: the path of the directory to create
+        """
         current = self.root
 
         parts = split_path(path)
@@ -38,6 +50,15 @@ class FileSystem:
             current = current.subdirectories[part]
 
     def add_file(self, path: str, content: str):
+        """
+        creates a file at the specified path with the given content.
+        Args:
+            path: the path of the file to create
+            content: the content of the file to create
+
+        Raises:
+            DuplicateFileError: if a file with the same name already exists in the target directory
+        """
         parts = split_path(path)
 
         directory_parts = parts[:-1]
@@ -71,7 +92,18 @@ class FileSystem:
 
         self.search_index.index_file(file_id, content)
 
-    def read_file(self, path) -> str:
+    def read_file(self, path: str) -> str:
+        """
+        computes the content of the file at the specified path and returns it.
+        Args:
+            path: the path of the file to read
+
+        Returns: the content of the file at the specified path
+
+        Raises:
+            FileNotFoundError: if the file does not exist at the specified path
+            PermissionError: if the file exists but does not have read permissions
+        """
         parts = split_path(path)
 
         directory_parts = parts[:-1]
@@ -103,6 +135,14 @@ class FileSystem:
         return content
 
     def list_directory(self, path: str) -> list[str]:
+        """
+        lists the contents of the directory at the specified path.
+        Args:
+            path: the path of the directory to list
+
+        Returns: a list of the names of the files and subdirectories in the directory at the specified path
+
+        """
         directory = resolve_path(self.root, path)
 
         subdirectories = list(directory.subdirectories.keys())
@@ -111,6 +151,17 @@ class FileSystem:
         return subdirectories + files
 
     def delete_file(self, path: str) -> None:
+        """
+        deletes the file at the specified path.
+
+        Args:
+            path: the path of the file to delete
+
+        Raises:
+            FileSystemError: if the specified path is the root directory or if the file does not exist at the specified path
+            FileNotFoundError: if the file does not exist at the specified path
+            PermissionError: if the file exists but does not have delete permissions
+        """
         if path == "/":
             raise FileSystemError("Cannot delete root directory.")
 
@@ -142,6 +193,15 @@ class FileSystem:
         del directory.files[file_name]
 
     def delete_directory(self, path: str):
+        """
+        deletes the directory at the specified path and all of its contents (files and subdirectories).
+
+        Args:
+            path: the path of the directory to delete
+
+        Raises:
+            FileSystemError: if the specified path is the root directory or if the directory does not exist at the specified path
+        """
         if path == "/":
             raise FileSystemError("Cannot delete root directory.")
 
@@ -150,6 +210,12 @@ class FileSystem:
         self._recursive_delete(target_directory)
 
     def _recursive_delete(self, directory: DirectoryNode):
+        """
+        utility function that recursively deletes a directory and all of its contents (files and subdirectories).
+
+        Args:
+            directory: the directory node to delete
+        """
         for child_name in list(directory.subdirectories.keys()):
             child = directory.subdirectories[child_name]
             self._recursive_delete(child)
@@ -162,6 +228,15 @@ class FileSystem:
             del directory.parent.subdirectories[directory.name]
 
     def _build_directory_path(self, directory: DirectoryNode) -> str:
+        """
+        utility function that builds the full path of a directory node by traversing up the directory tree.
+
+        Args:
+            directory: directory node to build the path for
+
+        Returns: the full path of the directory node
+
+        """
         parts = []
 
         current = directory
@@ -172,7 +247,18 @@ class FileSystem:
 
         return "/".join(reversed(parts))
 
-    def move(self, src_file_path: str, dest_file_path) -> None:
+    def move(self, src_file_path: str, dest_file_path: str) -> None:
+        """
+        moves a file from the source path to the destination path.
+
+        Args:
+            dest_file_path: the path to move the file to
+            src_file_path: the path to move the file from
+
+        Raises:
+            FileNotFoundError: if the file does not exist at the source path or if the destination directory does not exist
+            DuplicateFileError: if a file with the same name already exists in the destination directory
+        """
         src_parts = split_path(src_file_path)
 
         src_directory_parts = src_parts[:-1]
@@ -207,6 +293,17 @@ class FileSystem:
         del src_directory.files[src_file_name]
 
     def update_content(self, path: str, new_content: str) -> None:
+        """
+        updates the content of the file at the specified path with the new content.
+
+        Args:
+            path: the path of the file to update
+            new_content: the new content to write to the file
+
+        Raises:
+            FileNotFoundError: if the file does not exist at the specified path
+            PermissionError: if the file exists but does not have write permissions
+        """
         parts = split_path(path)
 
         directory_parts = parts[:-1]
@@ -244,7 +341,19 @@ class FileSystem:
         self.search_index.remove(file_id)
         self.search_index.index_file(file_id, new_content)
 
-    def read_file_version(self, path, version_index):
+    def read_file_version(self, path: str, version_index: int) -> str:
+        """
+        reads the content of a specific version of the file at the specified path.
+
+        Args:
+            path: the path of the file to read
+            version_index: the index of the version to read (0-based index, where 0 is the most recent version)
+
+        Returns: the content of the specified version of the file at the specified path
+
+        Raises:
+            FileNotFoundError: if the file does not exist at the specified path or if the specified version index is out of range
+        """
         parts = split_path(path)
 
         directory_parts = parts[:-1]
@@ -271,6 +380,15 @@ class FileSystem:
         return self.content_store.read_content(content_id)
 
     def search_results(self, word: str) -> list[str]:
+        """
+        searches for files that contain the specified word and returns a list of their paths.
+
+        Args:
+            word: the word to search for in the file contents
+
+        Returns: a list of paths of the files that contain the specified word
+
+        """
         matching_ids = self.search_index.search(word)
 
         results = []
@@ -278,7 +396,17 @@ class FileSystem:
 
         return results
 
-    def _collect_search_results(self, directory, matching_ids, results):
+    def _collect_search_results(
+        self, directory: DirectoryNode, matching_ids: Set[str], results: List[str]
+    ):
+        """
+        utility function that recursively traverses the directory tree and collects the paths of files that match the search criteria.
+
+        Args:
+            directory: the current directory node being traversed
+            matching_ids: a set of file IDs that match the search criteria
+            results: a list to collect the paths of matching files
+        """
         for file_name, file_id in directory.files.items():
             if file_id in matching_ids:
                 file_path = self._build_directory_path(directory) + f"/{file_name}"
@@ -288,6 +416,12 @@ class FileSystem:
             self._collect_search_results(child, matching_ids, results)
 
     def export_state(self, file_path: str):
+        """
+        exports the current state of the file system to a JSON file at the specified path.
+
+        Args:
+            file_path: the path of the JSON file to export the state to
+        """
         metadata_state = {}
 
         for (
@@ -354,6 +488,12 @@ class FileSystem:
         self,
         file_path: str,
     ):
+        """
+        loads the state of the file system from a JSON file at the specified path.
+
+        Args:
+            file_path: the path of the JSON file to load the state from
+        """
         with open(
             file_path,
             "r",

@@ -3,6 +3,11 @@ from core.filesystem import FileSystem
 
 
 def main():
+    """
+    Entry point for the file system CLI application.
+    Raises:
+        InvalidUsage: when the user provides an invalid command or insufficient arguments.
+    """
     fs = FileSystem()
 
     while True:
