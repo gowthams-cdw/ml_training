@@ -68,7 +68,10 @@ class FileSystem:
         directory = resolve_path(self.root, directory_path)
 
         if file_name in directory.files:
-            raise DuplicateFileError(f"File {file_name} already exists.")
+            overwrite = input("Are you sure, do you want to overwrite(yes/no)?: ")
+            if overwrite != "yes":
+                raise DuplicateFileError(f"File {file_name} already exists.")
+            self.delete_file(path)
 
         file_id = generate_id()
         content_id = generate_id()
@@ -281,9 +284,12 @@ class FileSystem:
         dest_file_name = deet_parts[-1]
 
         if dest_file_name in dest_directory.files:
-            raise DuplicateFileError(
-                f"File {dest_file_name} already exists in destination."
-            )
+            overwrite = input("Are you sure, do you want to overwrite(yes/no)?: ")
+            if overwrite != "yes":
+                raise DuplicateFileError(
+                    f"File {dest_file_name} already exists in destination."
+                )
+            self.delete_file(dest_file_path)
 
         dest_directory.files[dest_file_name] = file_id
 

@@ -48,4 +48,5 @@ class LRUCache:
         Args:
             content_id: A string representing the unique identifier of the content to be removed from the cache.
         """
-        del self._cache[content_id]
+        if content_id in self._cache:
+            del self._cache[content_id]

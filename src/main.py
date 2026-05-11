@@ -93,6 +93,23 @@ def main():
 
                 fs.load_state(path)
                 print("data loaded successfully.")
+            elif action == "update":
+                if len(parts) <= 2:
+                    raise InvalidUsage("Invalid Usage: load <filepath>")
+
+                src_path = parts[1]
+                content = parts[2]
+
+                fs.update_content(src_path, content)
+                print("file updated successfully")
+            elif action == "readv":
+                if len(parts) <= 2:
+                    raise InvalidUsage("Invalid Usage: load <filepath>")
+
+                src_path = parts[1]
+                version = int(parts[2])
+
+                print(fs.read_file_version(src_path, version))
             else:
                 print("Unknown Commnad!")
         except Exception as error:
