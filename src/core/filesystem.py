@@ -10,7 +10,7 @@ from models.file_version import FileVersion
 from models.metadata import FileMetadata
 from models.permissions import Permissions
 from storage.cache import LRUCache
-from storage.content_store import ContentStore
+from storage.fat_content_store import FATContentStore
 from storage.metadata_store import MetadataStore
 from storage.persistance import deserialize_directory, serialize_directory
 from utils.helpers import current_time, generate_id
@@ -27,7 +27,7 @@ class FileSystem:
         self.root = DirectoryNode(id=generate_id(), name="/", parent=None)
 
         self.metadata_store = MetadataStore()
-        self.content_store = ContentStore()
+        self.content_store = FATContentStore()
         self.cache = LRUCache(capacity=10)
         self.search_index = SearchIndex()
 
@@ -473,7 +473,7 @@ class FileSystem:
 
         data = {
             "directory_tree": directory_data,
-            "content_store": self.content_store._store,
+            "fat_content_store": self.content_store.to_dict(),
             "cache_capacity": self.cache._capacity,
             "cache": dict(self.cache._cache),
             "search_index": serialized_search_index,
@@ -508,7 +508,7 @@ class FileSystem:
 
         self.root = deserialize_directory(data["directory_tree"])
 
-        self.content_store._store = data["content_store"]
+        self.content_store = FATContentStore.from_dict(data["fat_content_store"])
         self.cache._capacity = data["cache_capacity"]
         self.cache._cache = OrderedDict(data["cache"])
         self.search_index._index = defaultdict(set)
