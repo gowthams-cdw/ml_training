@@ -1,6 +1,6 @@
 from typing import Optional
 
-import requests
+import httpx
 
 from config.env import get_env
 from services.db_services import get_collection, get_db
@@ -45,32 +45,53 @@ async def get_word_id(word_id: str) -> Optional[dict]:
 async def create_word(word: str) -> str:
     """
     Creates a new word document in the database.
+
     Args:
         word: The word to create.
 
-    Returns: The unique identifier of the created word.
+    Returns:
+        The unique identifier of the created word.
     """
+
     word_collection = get_word_collection()
 
     word_id = gen_uuid()
 
-    DICTIONARY_URI=get_env("DICTIONARY_URI")
+    DICTIONARY_URI = get_env("DICTIONARY_URI")
+
     meaning = "Missing dictionary meaning."
 
     if DICTIONARY_URI:
-        response = requests.get(f"{DICTIONARY_URI}/{word}")
-        word_meaning = response.json()
+        try:
+            async with httpx.AsyncClient() as client:
+                response = await client.get(
+                    f"{DICTIONARY_URI}/{word}",
+                    timeout=10.0,
+                )
 
-        if isinstance(word_meaning, list) and len(word_meaning) > 0:
-            meanings = word_meaning[0].get("meanings", [])
+            if response.status_code == 200:
+                word_meaning = response.json()
 
-            if meanings:
-                definitions = meanings[0].get("definitions", [])
-
-                if definitions:
-                    meaning = definitions[0].get(
-                        "definition", "Missing dictionary meaning."
+                if isinstance(word_meaning, list) and len(word_meaning) > 0:
+                    meanings = word_meaning[0].get(
+                        "meanings",
+                        [],
                     )
+
+                    if meanings:
+                        definitions = meanings[0].get(
+                            "definitions",
+                            [],
+                        )
+
+                        if definitions:
+                            meaning = definitions[0].get(
+                                "definition",
+                                "Missing dictionary meaning.",
+                            )
+
+        except Exception as e:
+            print(f"Dictionary API error: {e}")
 
     await word_collection.insert_one(
         {

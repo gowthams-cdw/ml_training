@@ -11,6 +11,7 @@ class UserWord(BaseModel):
         user_definition: The user's definition for the word.
         mastered: Whether the user has mastered the word.
     """
+
     word_id: str
     user_definition: str
     mastered: bool
@@ -24,30 +25,20 @@ class User(BaseModel):
         password: The user's password.
         words: A list of the user's word entries.
     """
+
     username: str
     password: str
     words: list[UserWord]
 
 
-class UserCreate(BaseModel):
+class UserAuth(BaseModel):
     """
-    A model representing the data required to create a new user.
+    A model representing the data required to authenticate/create a user.
     Attributes:
         username: The user's username.
         password: The user's password.
     """
-    username: str
-    password: str
 
-
-class LoginUser(BaseModel):
-    """
-    A model representing the data required to log in a user.
-
-    Attributes:
-        username: The user's username.
-        password: The user's password.
-    """
     username: str
     password: str
 
@@ -59,6 +50,7 @@ class UserWordUpdate(BaseModel):
         user_definition: The user's updated definition for the word.
         mastered: The user's updated mastery status for the word.
     """
+
     user_definition: Optional[str]
     mastered: Optional[bool]
 
@@ -69,6 +61,7 @@ class UserIdResponse(BaseModel):
     Attributes:
         id: The user's unique identifier.
     """
+
     id: str
 
 
@@ -78,4 +71,5 @@ class LoginUserResponse(BaseModel):
     Attributes:
         token: The authentication token.
     """
+
     token: str
