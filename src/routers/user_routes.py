@@ -11,7 +11,7 @@ from utils.auth import (
 user_router = APIRouter(prefix="/users", tags=["users"])
 
 
-@user_router.post("/create", status_code=201)
+@user_router.post("/signup", status_code=201)
 async def register_user(data: UserAuth):
     """
     Registers a new user.
