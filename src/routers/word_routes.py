@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from starlette.responses import StreamingResponse
 
 from models.api_response import ApiResponse
-from models.user_models import UserWord, UserWordUpdate
+from models.user_models import Vocabulary, VocabularyUpdate
 from models.word_models import WordCreate
 from services.user_services import get_user_by_username, update_user
 from services.word_services import create_word, get_word, get_word_id
@@ -43,7 +43,7 @@ async def add_word(
     if not existing_word or "id" not in existing_word:
         raise HTTPException(500, "Something went wrong")
 
-    new_word = UserWord(
+    new_word = Vocabulary(
         word_id=str(existing_word.get("id")),
         user_definition=body.word_meaning,
         mastered=False,
@@ -61,7 +61,7 @@ async def add_word(
     }
 
 
-@word_router.get("/", status_code=200)
+@word_router.get("/", status_code=200, response_model=ApiResponse)
 async def get_all_words(
     mastered: bool | None = None, current_user: str = Depends(decode_access_token)
 ):
@@ -108,7 +108,6 @@ async def get_all_words(
 
             for chunk in w["dictionary_meaning"].split():
                 yield f"event: chunk\ndata: {json.dumps({'word_id': w['word_id'], 'token': chunk + ' '})}\n\n"
-                await asyncio.sleep(1)
 
             yield f"event: definition_end\ndata: {json.dumps({'word_id': w['word_id']})}\n\n"
 
@@ -121,7 +120,7 @@ async def get_all_words(
     )
 
 
-@word_router.get("/{word_id}", status_code=200)
+@word_router.get("/{word_id}", status_code=200, response_model=ApiResponse)
 async def get_specific_word(
     word_id: str, current_user: str = Depends(decode_access_token)
 ):
@@ -143,7 +142,6 @@ async def get_specific_word(
 
         for chunk in db_word.get("meaning", "").split():
             yield f"event: chunk\ndata: {json.dumps({'token': chunk + ' '})}\n\n"
-            await asyncio.sleep(1)
 
         yield "event: done\ndata: {}\n\n"
 
@@ -154,10 +152,10 @@ async def get_specific_word(
     )
 
 
-@word_router.put("/{word_id}", status_code=200)
+@word_router.put("/{word_id}", status_code=200, response_model=ApiResponse)
 async def update_specific_word(
     word_id: str,
-    body: UserWordUpdate,
+    body: VocabularyUpdate,
     current_user: str = Depends(decode_access_token),
 ):
     """
@@ -205,7 +203,7 @@ async def update_specific_word(
     }
 
 
-@word_router.delete("/{word_id}", status_code=200)
+@word_router.delete("/{word_id}", status_code=200, response_model=ApiResponse)
 async def delete_specific_word(
     word_id: str, current_user: str = Depends(decode_access_token)
 ):

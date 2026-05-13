@@ -3,7 +3,7 @@ from typing import Optional
 from pydantic import BaseModel
 
 
-class UserWord(BaseModel):
+class Vocabulary(BaseModel):
     """
     A model representing a user's word entry.
     Attributes:
@@ -28,7 +28,7 @@ class User(BaseModel):
 
     username: str
     password: str
-    words: list[UserWord]
+    words: list[Vocabulary]
 
 
 class UserAuth(BaseModel):
@@ -43,7 +43,7 @@ class UserAuth(BaseModel):
     password: str
 
 
-class UserWordUpdate(BaseModel):
+class VocabularyUpdate(BaseModel):
     """
     A model representing the data required to update a user's word entry.
     Attributes:

@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException
 
+from models.api_response import ApiResponse
 from models.user_models import UserAuth
 from services.user_services import create_user, get_user_by_username
 from utils.auth import (
@@ -8,10 +9,10 @@ from utils.auth import (
     verify_password,
 )
 
-user_router = APIRouter(prefix="/users", tags=["users"])
+user_router = APIRouter(prefix="/auth", tags=["users"])
 
 
-@user_router.post("/signup", status_code=201)
+@user_router.post("/signup", status_code=201, response_model=ApiResponse)
 async def register_user(data: UserAuth):
     """
     Registers a new user.
@@ -38,7 +39,7 @@ async def register_user(data: UserAuth):
     }
 
 
-@user_router.post("/login")
+@user_router.post("/login", response_model=ApiResponse)
 async def login_user(data: UserAuth):
     """
     Logs in an existing user.

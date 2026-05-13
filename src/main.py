@@ -37,6 +37,7 @@ async def validation_exception_handler(_request: Request, _exc: RequestValidatio
     return JSONResponse(
         status_code=400,
         content={
+            "status_code": 400,
             "success": False,
             "message": "Validation failed",
         },
