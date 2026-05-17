@@ -12,3 +12,9 @@ wheels/
 # envs
 .env*
 !.env*.example
+
+# app specific
+*.log
+**/*.log
+data/
+outputs/

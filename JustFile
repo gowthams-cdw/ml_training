@@ -1,2 +1,5 @@
-run:
-  @uv run src/main.py
+run-git:
+  @uv run python -m app.cli.main --git https://github.com/silentFellow/cred.git
+
+run-dir:
+  @uv run python -m app.cli.main --dir .
