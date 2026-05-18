@@ -1,2 +1,5 @@
 run:
-  @uv run src/main.py
+  @uv run build.py
+
+run-cli:
+  @uv run chat.py

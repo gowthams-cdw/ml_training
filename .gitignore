@@ -12,3 +12,6 @@ wheels/
 # envs
 .env*
 !.env*.example
+
+# app specific
+chroma_db
