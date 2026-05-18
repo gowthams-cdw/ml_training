@@ -1,5 +1,6 @@
 import chromadb
 from chromadb.api.types import QueryResult
+from langsmith import traceable
 from sentence_transformers import (
     SentenceTransformer,
 )
@@ -32,6 +33,10 @@ class Embedder:
 
         self.collection = self.client.get_or_create_collection(name="repository_chunks")
 
+    @traceable(
+        name="Generate Embeddings",
+        run_type="embedding",
+    )
     def embed_chunks(
         self,
         chunks: list[dict],
@@ -95,6 +100,10 @@ class Embedder:
 
         app_logger.success(f"Stored {total} embeddings")
 
+    @traceable(
+        name="Semantic Search",
+        run_type="retriever",
+    )
     def search(
         self,
         query: str,

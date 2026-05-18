@@ -1,6 +1,7 @@
 import json
 
 import requests
+from langsmith import traceable
 
 from app.core.config import (
     DEFAULT_LLM_MODEL,
@@ -22,6 +23,10 @@ class RepositoryQAAgent:
         self.model = DEFAULT_LLM_MODEL
         self.base_url = OLLAMA_BASE_URL
 
+    @traceable(
+        name="Repository QA",
+        run_type="chain",
+    )
     def ask(
         self,
         question: str,

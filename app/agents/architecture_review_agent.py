@@ -1,3 +1,4 @@
+from langsmith import traceable
 import json
 
 import requests
@@ -18,6 +19,10 @@ class ArchitectureReviewAgent:
         self.model = DEFAULT_LLM_MODEL
         self.base_url = OLLAMA_BASE_URL
 
+    @traceable(
+        name="Architecture Review Agent",
+        run_type="llm",
+    )
     def review_architecture(
         self,
         detected_stack: dict,

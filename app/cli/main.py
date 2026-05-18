@@ -2,6 +2,8 @@ from pathlib import Path
 from typing import Optional, cast
 
 import typer
+from dotenv import load_dotenv
+from langsmith import traceable
 
 from app.agents.orchestrator import (
     GraphState,
@@ -52,6 +54,8 @@ from app.utils.cache import (
     CacheManager,
 )
 
+load_dotenv()
+
 app = typer.Typer(help=("AI Powered Codebase Architecture Analyzer"))
 
 
@@ -73,6 +77,10 @@ def validate_inputs(
 
 # app main command
 @app.command()
+@traceable(
+    name="Repository Analysis Pipeline",
+    run_type="chain",
+)
 def analyze(
     git: Optional[str] = typer.Option(
         None,
