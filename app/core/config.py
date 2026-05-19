@@ -76,6 +76,7 @@ CHUNK_OVERLAP = 150
 
 # llm config
 DEFAULT_LLM_MODEL = "qwen2.5-coder:14b"
+VALIDATION_LLM_MODEL = "llama3:8b"
 
 OLLAMA_BASE_URL = "http://localhost:11434"
 

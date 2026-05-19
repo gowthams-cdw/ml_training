@@ -5,6 +5,9 @@ from langgraph.graph import END, StateGraph
 from app.agents.api_review_agent import (
     APIReviewAgent,
 )
+from app.agents.architecture_diagram_agent import (
+    ArchitectureDiagramAgent,
+)
 from app.agents.architecture_review_agent import (
     ArchitectureReviewAgent,
 )
@@ -23,6 +26,7 @@ class GraphState(TypedDict):
     api_routes: list
     services: list
     dependency_result: dict
+    architecture_diagram: str
 
     repository_summary: str
     architecture_review: str
@@ -35,6 +39,7 @@ summary_agent = RepoSummaryAgent()
 review_agent = ArchitectureReviewAgent()
 service_analysis_agent = ServiceAnalysisAgent()
 api_review_agent = APIReviewAgent()
+diagram_agent = ArchitectureDiagramAgent()
 
 
 # nodes
@@ -85,6 +90,20 @@ def review_apis(
     return {"api_review": review}
 
 
+# diagram generator
+def generate_diagram(
+    state: GraphState,
+):
+    diagram = diagram_agent.generate_diagram(
+        repository_summary=state["repository_summary"],
+        architecture_review=state["architecture_review"],
+        service_analysis=state["service_analysis"],
+        api_review=state["api_review"],
+    )
+
+    return {"architecture_diagram": diagram}
+
+
 # graph
 workflow = StateGraph(GraphState)
 
@@ -108,6 +127,11 @@ workflow.add_node(
     review_apis,
 )
 
+workflow.add_node(
+    "diagram_generation",
+    generate_diagram,
+)
+
 workflow.set_entry_point("summary")
 
 workflow.add_edge(
@@ -127,6 +151,11 @@ workflow.add_edge(
 
 workflow.add_edge(
     "api_review",
+    "diagram_generation",
+)
+
+workflow.add_edge(
+    "diagram_generation",
     END,
 )
 

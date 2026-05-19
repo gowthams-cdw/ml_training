@@ -5,6 +5,9 @@ import typer
 from dotenv import load_dotenv
 from langsmith import traceable
 
+from app.agents.diagram_validation_agent import (
+    DiagramValidationAgent,
+)
 from app.agents.orchestrator import (
     GraphState,
     graph,
@@ -23,9 +26,6 @@ from app.analyzers.service_detector import (
     ServiceDetector,
 )
 from app.core.logger import app_logger
-from app.diagrams.mermaid_generator import (
-    MermaidGenerator,
-)
 from app.embeddings.chunker import (
     Chunker,
 )
@@ -37,6 +37,9 @@ from app.graph.graph_builder import (
 )
 from app.ingestion.repo_manager import (
     RepoManager,
+)
+from app.outputs.diagram_writer import (
+    DiagramWriter,
 )
 from app.outputs.markdown_writer import (
     MarkdownWriter,
@@ -205,13 +208,6 @@ def analyze(
 
     app_logger.info(f"Detected services/modules: {len(services)}")
 
-    # diagram generator
-    diagram_generator = MermaidGenerator()
-
-    diagram_path = diagram_generator.generate_dependency_diagram(dependency_graph)
-
-    app_logger.success(f"Diagram created at: {diagram_path}")
-
     # chunking and embeding for cache
     # incremental changes and semantic searches for qa agent
     chunker = Chunker()
@@ -251,6 +247,39 @@ def analyze(
 
     api_review = agent_result["api_review"]
 
+    architecture_diagram = agent_result["architecture_diagram"]
+
+    app_logger.info("\n===== ARCHITECTURE DIAGRAM =====\n")
+
+    print(architecture_diagram)
+
+    diagram_validator = DiagramValidationAgent()
+
+    diagram_validation = diagram_validator.validate_diagram(
+        repository_summary=(repository_summary),
+        architecture_review=(architecture_review),
+        service_analysis=(service_analysis),
+        api_review=(api_review),
+        architecture_diagram=(architecture_diagram),
+    )
+
+    app_logger.info("\n===== DIAGRAM VALIDATION =====\n")
+
+    print(f"Diagram Accuracy: {diagram_validation['accuracy_score']}%")
+
+    diagram_writer = DiagramWriter()
+
+    diagram_path = diagram_writer.save_diagram(
+        repository_name=(repository_path.name),
+        architecture_diagram=(architecture_diagram),
+    )
+
+    app_logger.info(f"Architecture Diagram saved at: {diagram_path}")
+
+    print("\n")
+
+    print(diagram_validation["validation"])
+
     app_logger.info("\n===== REPOSITORY SUMMARY =====\n")
 
     print(repository_summary)
@@ -276,7 +305,7 @@ def analyze(
         architecture_result=(architecture_result),
         graph_summary=(graph_summary),
         repository_summary=(repository_summary),
-        diagram_path=diagram_path,
+        architecture_diagram=architecture_diagram,
     )
 
     app_logger.success(f"Architecture report created: {report_path}")
